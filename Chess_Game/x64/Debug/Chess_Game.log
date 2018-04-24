@@ -1,0 +1,3 @@
+﻿  main.cpp
+c:\users\trylessfold\source\repos\chess_game\chess_game\main.cpp(30): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+  Chess_Game.vcxproj -> C:\Users\TryLessFold\source\repos\Chess_Game\Chess_Game\x64\Debug\Chess_Game.exe
