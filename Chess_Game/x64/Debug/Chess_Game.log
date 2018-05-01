@@ -1,3 +1,6 @@
 ﻿  main.cpp
-c:\users\trylessfold\source\repos\chess_game\chess_game\main.cpp(30): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\source\repos\chess_game\chess_game\main.cpp(45): warning C4552: +: оператор не имеет результата; требуется оператор с побочным действием
+c:\users\trylessfold\source\repos\chess_game\chess_game\main.cpp(46): warning C4552: +: оператор не имеет результата; требуется оператор с побочным действием
+c:\users\trylessfold\source\repos\chess_game\chess_game\main.cpp(120): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\source\repos\chess_game\chess_game\main.cpp(125): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
   Chess_Game.vcxproj -> C:\Users\TryLessFold\source\repos\Chess_Game\Chess_Game\x64\Debug\Chess_Game.exe
