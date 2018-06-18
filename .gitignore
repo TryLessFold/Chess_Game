@@ -2,3 +2,5 @@
 *.md
 ignore/
 .ignore/
+bin/
+build/
