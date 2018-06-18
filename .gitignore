@@ -1,5 +1,6 @@
 *.txt
 !CMakeList.txt
+!README.txt
 *.md
 bin/
 build/
