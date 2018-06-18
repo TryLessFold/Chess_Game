@@ -18,83 +18,108 @@ std::stringstream toString(int val)
 class figure
 {
 public:
-	int value, pass=0;
-	String status='0';
+	int pass=0;
+	int value;
 	float step = 50, w=50, h=50;
 	float x, y;
 	String file_name;
 	Image image;
 	Texture texture;
 	Sprite sprite;
-	figure() {};
-	void initial(String Value, int v, float X, float Y)
-	//figure(float X, float Y)
+	Text text;
+	bool isSelect;
+	figure() 
 	{
-		value = v;
+		bool isSelect = false;
+	};
+	void initial(String Value, float X, float Y)
+	{
+		value = Value[0];
 		pass = 1;
-		image.loadFromFile("Animations/"+Value+"_"+status+".png");
-		//image.createMaskFromColor(Color(0, 0, 0));
+		image.loadFromFile("Animations/"+Value+"_0.png");
 		texture.loadFromImage(image);
 		sprite.setTexture(texture);
-		x = X; y = Y;
+		x = X; y = Y-5;
 	    sprite.setTextureRect(IntRect(0, 0, 50, 50));
 		sprite.setPosition(x, y);
+		text.setCharacterSize(16);
+		text.setFillColor(Color::Black);
+		text.setString("");
+		text.setPosition(x+25, y-25);
 	}
-	void MoveUp()
+	void settext(String str)
 	{
-		x + 50;
-		y + 50;
-		sprite.setPosition(x, y);
+		text.setString(str);
 	}
-	//void update() //функция "оживления" объекта класса. update - обновление. принимает в себя время SFML , вследствие чего работает бесконечно, давая персонажу движение.
-	//{
-	//	//switch (dir)//реализуем поведение в зависимости от направления. (каждая цифра соответствует направлению)
-	//	//{
-	//	//case 0: dx = speed; dy = 0;   break;//по иксу задаем положительную скорость, по игреку зануляем. получаем, что персонаж идет только вправо
-	//	//case 1: dx = -speed; dy = 0;   break;//по иксу задаем отрицательную скорость, по игреку зануляем. получается, что персонаж идет только влево
-	//	//case 2: dx = 0; dy = speed;   break;//по иксу задаем нулевое значение, по игреку положительное. получается, что персонаж идет только вниз
-	//	//case 3: dx = 0; dy = -speed;   break;//по иксу задаем нулевое значение, по игреку отрицательное. получается, что персонаж идет только вверх
-	//	//}
-
-	//	//x += dx*time;//то движение из прошлого урока. наше ускорение на время получаем смещение координат и как следствие движение
-	//	//y += dy*time;//аналогично по игреку
-
-	//	//speed = 0;//зануляем скорость, чтобы персонаж остановился.
-	//	sprite.setPosition(x, y); //выводим спрайт в позицию x y , посередине. бесконечно выводим в этой функции, иначе бы наш спрайт стоял на месте.
-	//}
 };
+
 //==========================================================================================
 //MAIN
 //==========================================================================================
 int main()
 {
-	Image map_image;//объект изображения для карты
-	Texture map;//текстура карты
-	Sprite s_map;//создаём спрайт для карты
-	map_image.loadFromFile("Animations/map.png");//загружаем файл для карты
-	map.loadFromImage(map_image);//заряжаем текстуру картинкой
-	s_map.setTexture(map);//заливаем текстуру спрайтом
-	//figure figure[32];
+	Font font;//шрифт 
+	font.loadFromFile("Windsor.ttf");//передаем нашему шрифту файл шрифта
+	Text text;//создаем объект текст. закидываем в объект текст строку, шрифт, размер шрифта(в пикселях);//сам объект текст (не строка)
+	//text.setFillColor(Color::Red);//покрасили текст в красный. если убрать эту строку, то по умолчанию он белый
+	text.setFont(font);
+	text.setCharacterSize(14);
+	text.setString("");
+	text.setFillColor(Color::Red);
+	text.setStyle(sf::Text::Bold | sf::Text::Underlined);
+	Image map_image;
+	Texture map;
+	Sprite s_map;
+	map_image.loadFromFile("Animations/map.png");
+	map.loadFromImage(map_image);
+	s_map.setTexture(map);
 	figure figure[32];
-	int trigger_map = 0;
+	int trigger_map = 0, trigger_figure = -1;
 	int ch_figure = 0, i_mch, j_mch;
 	int xbase = 1280, ybase = 720;
 	int *xwin, *ywin;
 	xwin = &xbase;
 	ywin = &ybase;
+	bool mousec = false;
 	sf::RenderWindow window(VideoMode( *xwin, *ywin ), "Chess", sf::Style::Fullscreen);
 	while (window.isOpen())
 	{
 		ch_figure = 0;
+		Vector2i wPos = Mouse::getPosition(window);
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
+			if ((event.key.code == Mouse::Left) && (mousec == false))
+			{
+				mousec = true;
+				if (trigger_figure == -1)
+				{
+					for (int i = 0; i < 32; i++)
+						if (figure[i].sprite.getGlobalBounds().contains(wPos.x, wPos.y))
+						{
+							trigger_figure = i;
+							figure[i].sprite.setColor(Color(100, 100, 100));
+						}
+				}
+				else
+				{
+					for (int i = 0; i < 32; i++)
+						if (figure[i].sprite.getGlobalBounds().contains(wPos.x, wPos.y))
+						{
+							if (trigger_figure == i)
+							{
+								figure[i].sprite.setColor(Color(255, 255, 255));
+							}
+							trigger_figure = -1;
+						}
+
+				}
+			}
+			if (event.type == Event::MouseButtonReleased)
+				if (event.key.code == Mouse::Left)
+					mousec = false;
 			if (event.type == sf::Event::Closed)
 				window.close();
-		}
-		if ((Keyboard::isKeyPressed(Keyboard::Up) || (Keyboard::isKeyPressed(Keyboard::W))))
-		{
-			figure[0].MoveUp();
 		}
 		window.clear();
 		i_mch = 0;
@@ -122,7 +147,8 @@ int main()
 				{
 					if (FigureMap[i_mch][j_mch] != '0')
 					{
-						figure[ch_figure].initial((FigureMap[i_mch][j_mch]), 7, 50 * j, 50 * i);
+						figure[ch_figure].initial((FigureMap[i_mch][j_mch]), 50 * j, 50 * i);
+						figure[ch_figure].text.setFont(font);
 						ch_figure++;
 					}
 					j_mch++;
@@ -135,8 +161,11 @@ int main()
 				window.draw(s_map);
 			}
 		for (int i = 0; i <= 32; i++)
-		if (figure[i].pass==1)
-		window.draw(figure[i].sprite);
+			if (figure[i].pass == 1)
+			{
+				window.draw(figure[i].sprite);
+				window.draw(figure[i].text);
+			}
 		window.display();
 	}
 	return 0;

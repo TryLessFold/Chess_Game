@@ -1,4 +1,6 @@
 *.txt
+!CMakeList.txt
+!README.txt
 *.md
-ignore/
-.ignore/
+bin/
+build/
