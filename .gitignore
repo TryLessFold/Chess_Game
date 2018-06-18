@@ -1,6 +1,5 @@
 *.txt
+!CMakeList.txt
 *.md
-ignore/
-.ignore/
 bin/
 build/
