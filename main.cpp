@@ -62,6 +62,10 @@ public:
 		sprite.setTextureRect(IntRect(0, 0, 50, 50));
 		sprite.setPosition(x, y);
 	}
+	void reload()
+	{
+		sprite.setPosition(x, y);
+	}
 };
 
 //==========================================================================================
@@ -107,7 +111,7 @@ void FileToFile(std::string a, std::string b, int n)
 //==========================================================================================
 int main()
 {
-	Font font; 
+	Font font;
 	font.loadFromFile("Fonts/Windsor.ttf");
 	Image map_image;
 	Texture map;
@@ -116,22 +120,28 @@ int main()
 	map.loadFromImage(map_image);
 	s_map.setTexture(map);
 	figure figure[32];
-	int trigger_map = 0, trigger_figure = -1;
+	char castling[2] = { 3,3 }, parry[2] = { 0,0 }, x_parrying, y_parrying;
+	char i_blackk = 1, j_blackk = 5, i_whitek = 8, j_whitek = 4;
+	int **a;
+	int trigger_map = 0, trigger_figure = -1, trigger_figure_to = -1;
 	int ch_figure = 0, i_mch = 0, j_mch = 0;
-	int x_desk = 0, y_desk = 0, i=0, j=0, i1=0, j1=0, k=0;
+	int x_desk = 0, y_desk = 0, iy = 0, jx = 0, i1 = 0, j1 = 0, k = 0, pass = 0;
 	int xbase = 1280, ybase = 720;
 	int *xwin, *ywin;
 	xwin = &xbase;
 	ywin = &ybase;
 	bool mousec = false;
-	sf::RenderWindow window(VideoMode( *xwin, *ywin ), "Chess", sf::Style::Fullscreen);
+	sf::RenderWindow window(VideoMode(*xwin, *ywin), "Chess", sf::Style::Fullscreen);
+	a = new int*[10];
+	for (int i = 0; i < 10; i++)
+		a[i] = new int[10];
 	FileToMass(FigureMap, 8, "0", k);
 	for (int i = 0; i < HEIGHT_MAP; i++)
 		for (int j = 0; j < WIDTH_MAP; j++)
 		{
 			if (TileMap[i][j] == '0')
 			{
-				s_map.setTextureRect(IntRect(0, 0, 50, 50)); 
+				s_map.setTextureRect(IntRect(0, 0, 50, 50));
 				trigger_map = 0;
 			}
 			if (TileMap[i][j] == 'w')
@@ -155,8 +165,10 @@ int main()
 				}
 			}
 			s_map.setPosition(j * 50, i * 50);
-			if ((trigger_map == 1) && (i_mch<8))
+			if ((trigger_map == 1) && (i_mch < 8))
 			{
+				if(FigureMap[i_mch][j_mch]>=65) a[i_mch + 1][j_mch + 1] = FigureMap[i_mch][j_mch] - 55;
+				else a[i_mch + 1][j_mch + 1] = FigureMap[i_mch][j_mch]-48;
 				if (FigureMap[i_mch][j_mch] != '0')
 				{
 					figure[ch_figure].initial((FigureMap[i_mch][j_mch]), 50 * j, 50 * i);
@@ -172,6 +184,15 @@ int main()
 			}
 			window.draw(s_map);
 		}
+	std::cout << y_desk << " " << x_desk << std::endl;
+	for (int i = 1; i < 9; i++)
+	{
+		for (int j = 1; j < 9; j++)
+		{
+			std::cout << a[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
 	while (window.isOpen())
 	{
 		ch_figure = 0;
@@ -181,16 +202,19 @@ int main()
 		{
 			if ((event.key.code == Mouse::Left) && (mousec == false))
 			{
-				mousec = true;
 				if (trigger_figure == -1)
 				{
 					for (int i = 0; i < 32; i++)
 						if (figure[i].sprite.getGlobalBounds().contains(wPos.x, wPos.y))
 						{
-							figure[i].setemoj("1");
-							trigger_figure = i;
-							i = (wPos.y - y_desk) / 50;
-							j = (wPos.x - x_desk) / 50;
+							iy = ((wPos.y - y_desk) / 50) + 1;
+							jx = ((wPos.x - x_desk) / 50) + 1;
+							//if ((a[iy][jx] / 7) == k)
+							//{
+								mousec = true;
+								figure[i].setemoj("1");
+								trigger_figure = i;
+							//}
 							break;
 						}
 				}
@@ -201,6 +225,7 @@ int main()
 						{
 							if (trigger_figure == i)
 							{
+								mousec = true;
 								figure[i].setemoj("0");
 								trigger_figure = -1;
 								break;
@@ -208,19 +233,131 @@ int main()
 						}
 
 				}
-				if (trigger_figure != -1)
+				if ((trigger_figure != -1)&&(mousec==false))
 				{
-					i1 = (wPos.y - y_desk) / 50;
-					j1 = (wPos.x - x_desk) / 50;	
+					mousec = true;
+					for (int i = 0; i < 32; i++)
+						if (figure[i].sprite.getGlobalBounds().contains(wPos.x, wPos.y))
+						{
+							trigger_figure_to = i;
+							break;
+						}
+					i1 = ((wPos.y - y_desk) / 50) + 1;
+					j1 = ((wPos.x - x_desk) / 50) + 1;
+					if ((iy > 0) && (iy < 9) && (jx > 0) && (jx < 9) && (j1 > 0) && (j1 < 9) && (i1 > 0) && (i1 < 9))
+					{
+						pass = CheckMove(a, iy, jx, i1, j1);
+						if (((a[iy][jx] == 12) || (a[iy][jx] == 6)) && (castling[k] > 0) && (pass == 0))
+							pass = Castling(a, iy, jx, i1, j1, castling[k]);
+						if ((parry[k] == 1) && (j1 == x_parrying)&&(i1 == y_parrying))
+						{
+							if (((a[iy][jx] == 1) || (a[iy][jx] == 7)) && (pass == 0))
+							{
+								pass = Attack(a, iy, jx, i1, j1);
+								parry[k] = 0;
+							}
+							else
+								parry[k] = 0;
+						}
+						if (((a[iy][jx] == 1) || (a[iy][jx] == 7)) && (pass != 0))
+						{
+							parry[1 - k] = Charge(a, iy, jx, i1, j1);
+							if (parry[1 - k] != 0) 
+							{
+								y_parrying = i1;
+								x_parrying = j1; 
+							}
+						}
+					}
+					else pass = 4;
+					if (pass == 0) printf("Wrong Move\n");
+					if (pass == 3) printf("FRIEND!\n");
+					if (pass == 1)
+					{
+						if ((a[iy][jx] == 2) && (castling[k] != 0))
+						{
+							if (jx == 1) castling[k] = 2;
+							else if (jx == 8) castling[k] = 1;
+						}
+						if (((a[iy][jx] == 12) || (a[iy][jx] == 6)) && (castling[k] != 0)) castling[k] = 0;
+						k = 1 - k;
+						SwapMove(&a[iy][jx], &a[i1][j1]);
+						figure[trigger_figure].x += ((j1 - jx) * 50);
+						figure[trigger_figure].y += ((i1 - iy) * 50);
+						figure[trigger_figure].reload();
+						figure[trigger_figure].setemoj("0");
+						Change(a, i1, j1);
+						trigger_figure = -1;
+					}
+					if (pass == 2)
+					{
+						if ((a[iy][jx] == 2) && (castling[k] != 0))
+						{
+							if (jx == 1) castling[k] = 2;
+							else if (jx == 8) castling[k] = 1;
+						}
+						if (((a[iy][jx] == 12) || (a[iy][jx] == 6)) && (castling[k] != 0)) castling[k] = 0;
+						k = 1 - k;
+						SwapMove(&a[iy][jx], &a[i1][j1]);
+						figure[trigger_figure].x += ((j1 - jx) * 50);
+						figure[trigger_figure].y += ((i1 - iy) * 50);
+						figure[trigger_figure].reload();
+						figure[trigger_figure_to].x = 0;
+						figure[trigger_figure_to].y = 0;
+						figure[trigger_figure_to].reload();
+						figure[trigger_figure].setemoj("0");
+						Change(a, iy, jx);
+						trigger_figure = -1;
+					}
+					if (pass == 4) printf("Choose Figure\n");
+					if (pass == 5)
+					{
+						SwapMove(&a[iy][jx], &a[i1][j1]);
+						if (j1 > jx)
+						{
+							SwapMove(&a[i1][8], &a[i1][j1 - 1]);
+							figure[trigger_figure].x += ((j1 - jx) * 50);
+							figure[trigger_figure].y += ((i1 - iy) * 50);
+						}
+						else
+						{
+							figure[trigger_figure].x += ((j1 - jx) * 50);
+							figure[trigger_figure].y += ((i1 - iy) * 50);
+							figure[trigger_figure].reload();
+							figure[trigger_figure].setemoj("0");
+							SwapMove(&a[i1][1], &a[i1][j1 + 1]);
+						}
+						castling[k] = 0;
+						k = 1 - k;
+						trigger_figure = -1;
+					}
+					if (pass == 6)
+					{
+						if (k == 0) i1--;
+						else i1++;
+						SwapMove(&a[iy][jx], &a[i1][j1]);
+						figure[trigger_figure].setemoj("0");
+						figure[trigger_figure].x += ((j1 - jx) * 50);
+						figure[trigger_figure].y += ((i1 - iy) * 50);
+						figure[trigger_figure].reload();
+						figure[trigger_figure_to].x = 0;
+						figure[trigger_figure_to].y = 0;
+						figure[trigger_figure_to].reload();
+						k = 1 - k;
+						trigger_figure = -1;
+					}
 				}
 			}
 			if (event.type == Event::MouseButtonReleased)
 				if (event.key.code == Mouse::Left)
+				{
+					std::cout << iy << " " << jx << "    " << i1 << " " << j1 << std::endl;
+					std::cout << pass << std::endl;
 					mousec = false;
+				}
 			if (event.type == sf::Event::Closed)
 				window.close();
 		}
-		std::cout << i << " " << j << "    " << i1 << " " << j1 << std::endl;
 		window.clear();
 		i_mch = 0;
 		j_mch = 0;
