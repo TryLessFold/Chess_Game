@@ -120,9 +120,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Desktop\Chess_Game-Error\main\main\Functions.cpp" />
+    <ClCompile Include="..\Desktop\Chess_Game-Error\main\main\main1.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Desktop\Chess_Game-Error\main\main\Functions.h" />
     <ClInclude Include="map.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

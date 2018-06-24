@@ -1,6 +1,6 @@
 ﻿  main.cpp
-c:\users\trylessfold\source\repos\chess_game\chess_game\main.cpp(101): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
-c:\users\trylessfold\source\repos\chess_game\chess_game\main.cpp(110): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
-c:\users\trylessfold\source\repos\chess_game\chess_game\main.cpp(148): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
-c:\users\trylessfold\source\repos\chess_game\chess_game\main.cpp(153): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
-  Chess_Game.vcxproj -> C:\Users\TryLessFold\source\repos\Chess_Game\Chess_Game\x64\Debug\Chess_Game.exe
+c:\users\trylessfold\chess_game\main.cpp(157): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(162): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(188): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(200): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(245): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
