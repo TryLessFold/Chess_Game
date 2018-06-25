@@ -21,14 +21,19 @@ public:
 	String file_name;
 	Image image;
 	Texture texture;
+	Texture textured;
 	Sprite sprite;
+	Sprite talk_window;
 	Text text;
 	bool isAttack;
 	bool isMove;
+	bool isSpeech;
+	bool valuesf;
 	figure() 
 	{
 		isAttack = false;
 		isMove = false;
+		valuesf = false;
 	};
 	void initial(char Value, float X, float Y)
 	{
@@ -42,10 +47,15 @@ public:
 		x = X; y = Y-5;
 	    sprite.setTextureRect(IntRect(0, 0, 50, 50));
 		sprite.setPosition(x, y);
-		text.setCharacterSize(16);
-		text.setFillColor(Color::Black);
-		text.setString(Value);
-		text.setPosition(x+25, y-25);
+		text.setCharacterSize(14);
+		text.setFillColor(Color(0,0,0));
+		text.setString("");
+		text.setPosition(x+55, y-40);
+		image.loadFromFile("Animations/dialogue.png");
+		textured.loadFromImage(image);
+		talk_window.setTexture(textured);
+		talk_window.setTextureRect(IntRect(0, 0, 150, 50));
+		talk_window.setPosition(x+40, y-40);
 		//sprite.setOrigin(25, 25);
 	}
 	void settext(String str)
@@ -72,7 +82,8 @@ public:
 	{
 		//sprite.setOrigin(25, 25);
 		sprite.setPosition(x, y);
-		text.setPosition(x + 25, y - 25);
+		text.setPosition(x + 55, y - 25);
+		talk_window.setPosition(x + 40, y - 40);
 	}
 	void mirror(String Value)
 	{
@@ -81,6 +92,11 @@ public:
 		sprite.setTexture(texture);
 		sprite.setTextureRect(IntRect(50, 0, -50, 50));
 		sprite.setPosition(x, y);
+	}
+	void def()
+	{
+		sprite.setOrigin(0, 0);
+		sprite.setRotation(0);
 	}
 };
 
@@ -130,15 +146,19 @@ void ChangeView(figure* a, int n, int k, int x, int y, int i)
 			{
 				a[i].sprite.setOrigin(0, 0);
 				a[i].text.setOrigin(0, 0);
+				a[i].talk_window.setOrigin(0, 0);
 				a[i].sprite.setRotation(0);
 				a[i].text.setRotation(0);
+				a[i].talk_window.setRotation(0);
 			}
 			else
 			{
 				a[i].sprite.setOrigin(50, 60);
-				a[i].text.setOrigin(0, 110);
+				a[i].text.setOrigin(-50, 120);
+				a[i].talk_window.setOrigin(-20, 150);
 				a[i].sprite.rotate(180);
 				a[i].text.setRotation(180);
+				a[i].talk_window.setRotation(180);
 			}
 		}
 	ChangeRotate_0(k, x, y, i);
@@ -156,13 +176,14 @@ int main()
 	map_image.loadFromFile("Animations/map.png");
 	map.loadFromImage(map_image);
 	s_map.setTexture(map);
-	figure figure[32];
+	figure figure[32], choice[6];
 	Clock clock;
-	double dis;
+	double dis, timer;
 	char castling[2] = { 3,3 }, parry[2] = { 0,0 }, x_parrying, y_parrying;
 	char i_blackk = 1, j_blackk = 4, i_whitek = 8, j_whitek = 4;
 	int **a;
-	int trigger_map = 0, trigger_figure = -1, trigger_figure_to = -1, trigger_view=180;
+	int trigger_map = 0, trigger_figure = -1, trigger_figure_to = -1, trigger_view=180, trigger_talk = -1,
+		trigger_choice = -1;
 	int ch_figure = 0, i_mch = 0, j_mch = 0, mp=0;
 	int x_desk = 0, y_desk = 0, iy = 0, jx = 0, i1 = 0, j1 = 0, k = 0, b, w, pass = 0, tempX=0, tempY=0;
 	int xbase = 1280, ybase = 720, aat=0;
@@ -239,18 +260,28 @@ int main()
 	while (window.isOpen())
 	{
 		if (mp == -1) mp = 0;
-		float time = clock.getElapsedTime().asMicroseconds(); //дать прошедшее время в микросекундах
-		clock.restart(); //перезагружает время
-		time = time / 600; //скорость игры
+		float time = clock.getElapsedTime().asMicroseconds();
+		clock.restart();
+		time = time / 600;
 		ch_figure = 0;
-		Vector2i pixelPos = Mouse::getPosition(window);//забираем коорд курсора
-		Vector2f wPos = window.mapPixelToCoords(pixelPos);//переводим их в игровые (уходим от коорд окна)
-		std::cout << wPos.x << " " << wPos.y << std::endl;
+		Vector2i pixelPos = Mouse::getPosition(window);
+		Vector2f wPos = window.mapPixelToCoords(pixelPos);
+		//std::cout << wPos.x << " " << wPos.y << std::endl;
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
 			if ((event.key.code == Mouse::Left) && (mousec == false)&&(figure[trigger_figure].isMove!=true) && (figure[trigger_figure].isAttack != true))
 			{
+				if (trigger_choice != -1)
+				{
+					for (int i = 0; i<=4; i++)
+						if (choice[i].sprite.getGlobalBounds().contains(wPos.x, wPos.y))
+						{
+							mousec = true;
+							choice[i].setemoj("1");
+							trigger_talk = i;
+						}
+				}
 				if (trigger_figure == -1)
 				{
 					for (int i = 0; i < 32; i++)
@@ -263,6 +294,26 @@ int main()
 								mousec = true;
 								figure[i].setemoj("1");
 								trigger_figure = i;
+							}
+							else if (trigger_talk==-1)
+							{
+								trigger_talk = i;
+								figure[trigger_talk].isSpeech = true;
+								figure[trigger_talk].setemoj("1");
+								int xx = rand() % 3+1;
+								switch (xx)
+								{
+								case 1:
+									figure[trigger_talk].settext("Take off your dirty hands");
+									break;
+								case 2:
+									figure[trigger_talk].settext("GO AWAY!!!");
+									break;
+								case 3:
+									figure[trigger_talk].settext("Pervent! Stop it!");
+									break;
+								}
+								timer = 0;
 							}
 							break;
 						}
@@ -321,8 +372,23 @@ int main()
 						}
 					}
 					else pass = 4;
-					if (pass == 0) printf("Wrong Move\n");
-					if (pass == 3) printf("FRIEND!\n");
+					if (pass == 0)
+					{
+						figure[trigger_figure].isSpeech = true;
+						trigger_talk = trigger_figure;
+						figure[trigger_talk].settext("I can't do this!");
+						timer = 0;
+					}
+					if (pass == 3)
+					{
+						if (trigger_talk!=-1)
+						figure[trigger_talk].setemoj("0");
+						figure[trigger_figure_to].isSpeech = true;
+						trigger_talk = trigger_figure_to;
+						figure[trigger_talk].setemoj("1");
+						figure[trigger_talk].settext("TRAITOR!!!");
+						timer = 0;
+					}
 					if (pass == 1)
 					{
 						if ((a[iy][jx] == 2) && (castling[k] != 0))
@@ -343,7 +409,6 @@ int main()
 						}
 						figure[trigger_figure].isMove = true;
 						figure[trigger_figure].setemoj("0");
-						Change(a, i1, j1);
 					}
 					if (pass == 2)
 					{
@@ -364,7 +429,6 @@ int main()
 							i_whitek = i1; j_whitek = j1;
 						}
 						figure[trigger_figure].isAttack = true;
-						Change(a, iy, jx);
 					}
 					if (pass == 4) printf("Choose Figure\n");
 					if (pass == 5)
@@ -403,7 +467,7 @@ int main()
 							figure[trigger_figure_to].x -= ((j1 - jx) * 50);
 							SwapMove(&a[i1][1], &a[i1][j1 + 1]);
 						}
-						std::cout <<"||||||||"<< trigger_figure_to << std::endl;
+						//std::cout <<"||||||||"<< trigger_figure_to << std::endl;
 						figure[trigger_figure_to].reload();
 						castling[k] = 0;
 						k = 1 - k;
@@ -413,13 +477,14 @@ int main()
 						if (k == 0) i1--;
 						else i1++;
 						SwapMove(&a[iy][jx], &a[i1][j1]);
-						figure[trigger_figure].setemoj("0");
-						figure[trigger_figure].x += ((j1 - jx) * 50);
-						figure[trigger_figure].y += ((i1 - iy) * 50);
-						figure[trigger_figure].reload();
-						figure[trigger_figure_to].x = 0;
-						figure[trigger_figure_to].y = 0;
-						figure[trigger_figure_to].reload();
+						figure[trigger_figure].setemoj("1");
+						figure[trigger_figure].isAttack = true;
+						//figure[trigger_figure].x += ((j1 - jx) * 50);
+						//figure[trigger_figure].y += ((i1 - iy) * 50);
+						//figure[trigger_figure].reload();
+						//figure[trigger_figure_to].x = 0;
+						//figure[trigger_figure_to].y = 0;
+						//figure[trigger_figure_to].reload();
 						k = 1 - k;
 						//trigger_figure = -1;
 						//ChangeView(figure, 32, k, x_desk + 200, y_desk + 200);
@@ -429,14 +494,21 @@ int main()
 			if (event.type == Event::MouseButtonReleased)
 				if (event.key.code == Mouse::Left)
 				{
-					std::cout << iy << " " << jx << "    " << i1 << " " << j1 << std::endl;
-					std::cout << pass << std::endl;
+					//std::cout << iy << " " << jx << "    " << i1 << " " << j1 << std::endl;
+					//std::cout << pass << std::endl;
+					for (int i = 1; i < 9; i++)
+					{
+						for (int j = 1; j < 9; j++)
+							std::cout << a[i][j] << " ";
+						std::cout << std::endl;
+					}
 					mousec = false;
 				}
 			if (event.type == sf::Event::Closed)
 				window.close();
 		}
-		if ((figure[trigger_figure].isMove)&&(trigger_figure!=-1)){
+
+		if ((figure[trigger_figure].isMove)&&(trigger_figure!=-1)&&(trigger_choice == -1)){
 			//std::cout << iy << " " << jx << "    " << i1 << " " << j1 << std::endl;
 			dis = sqrt((((j1 - 1) * 50 - (int)((figure[trigger_figure].x - x_desk))))*(((j1 - 1) * 50 - (int)((figure[trigger_figure].x - x_desk))))
 				+ (((i1 - 1) * 50 - (int)((figure[trigger_figure].y - y_desk))))*(((i1 - 1) * 50 - (int)((figure[trigger_figure].y - y_desk)))));
@@ -466,11 +538,18 @@ int main()
 					trigger_view = 0;
 				}
 			}
-			std::cout << trigger_figure << std::endl;
-			std::cout << figure[trigger_figure].x<<" ";
-			std::cout << figure[trigger_figure].y << std::endl;
+			if ((figure[trigger_figure].value == 1) && (i1 == 1)&&(!figure[trigger_figure].valuesf))
+			{
+				trigger_choice = trigger_figure;
+				figure[trigger_figure].isMove = false;
+			}
+			else if ((figure[trigger_figure].value == 7) && (i1 == 8) && (!figure[trigger_figure].valuesf))
+			{
+				trigger_choice = trigger_figure;
+				figure[trigger_figure].isMove = false;
+			}
 		}
-		if ((figure[trigger_figure_to].isMove) && (trigger_figure_to != -1)) {
+		if ((figure[trigger_figure_to].isMove) && (trigger_figure_to != -1) && (trigger_choice == -1)) {
 			//std::cout << iy << " " << jx << "    " << i1 << " " << j1 << std::endl;
 			dis = sqrt((((j1 - 1) * 50 - (int)((figure[trigger_figure_to].x - x_desk))))*(((j1 - 1) * 50 - (int)((figure[trigger_figure_to].x - x_desk))))
 				+ (((i1 - 1) * 50 - (int)((figure[trigger_figure_to].y - y_desk))))*(((i1 - 1) * 50 - (int)((figure[trigger_figure_to].y - y_desk)))));
@@ -487,7 +566,7 @@ int main()
 				figure[trigger_figure_to].isMove = false;
 			}
 		}
-		if ((figure[trigger_figure].isAttack) && (trigger_figure != -1))
+		if ((figure[trigger_figure].isAttack) && (trigger_figure != -1) && (trigger_choice == -1))
 		{
 			if (w == 1) w = 2;
 			else if (CheckSafetyKing(a, i_whitek, j_whitek))
@@ -791,6 +870,65 @@ int main()
 			trigger_view += 5;
 			ChangeView(figure, 32, k, x_desk + 200, y_desk + 200, trigger_view);
 		}
+		if ((figure[trigger_talk].isSpeech) && (trigger_talk != -1) && (trigger_choice == -1))
+		{
+			timer += time;
+			if (timer > 2000)
+			{
+				if (trigger_talk!=trigger_figure)
+				figure[trigger_talk].setemoj("0");
+				figure[trigger_talk].isSpeech = false;
+				figure[trigger_talk].settext("");
+				trigger_talk = -1;
+				timer = 0;
+			}
+		}
+		if (trigger_choice != -1)
+		{
+			if (figure[trigger_choice].value / 7 == 0)
+			{
+				choice[0].initial('1', x_desk + 550, y_desk);
+				choice[0].def();
+				choice[1].initial('2', x_desk + 550, y_desk+60);
+				choice[1].def();
+				choice[2].initial('3', x_desk + 550, y_desk+120);
+				choice[2].def();
+				choice[3].initial('4', x_desk + 550, y_desk+180);
+				choice[3].def();
+				choice[4].initial('5', x_desk + 550, y_desk+240);
+				choice[4].def();
+			}
+			else
+			{
+				choice[0].initial('7', x_desk - 250, y_desk);
+				choice[0].sprite.setOrigin(150, 400);
+				choice[0].sprite.setRotation(180);
+				choice[1].initial('8', x_desk - 250, y_desk+60);
+				choice[1].sprite.setOrigin(150, 275);
+				choice[1].sprite.setRotation(180);
+				choice[2].initial('9', x_desk - 250, y_desk+120);
+				choice[2].sprite.setOrigin(150, 150);
+				choice[2].sprite.setRotation(180);
+				choice[3].initial('A', x_desk - 250, y_desk+180);
+				choice[3].sprite.setOrigin(150, 25);
+				choice[3].sprite.setRotation(180);
+				choice[4].initial('B', x_desk - 250, y_desk+240);
+				choice[4].sprite.setOrigin(150, -100);
+				choice[4].sprite.setRotation(180);
+			}
+			if (trigger_talk != -1)
+			{
+				std::cout << "HOP" << std::endl;
+				figure[trigger_choice].Valuestr = choice[trigger_talk].Valuestr;
+				figure[trigger_choice].value = choice[trigger_talk].value;
+				figure[trigger_choice].valuesf = true;
+				figure[trigger_choice].setemoj("0");
+				a[i1][j1] = figure[trigger_choice].value;
+				trigger_choice = -1;
+				trigger_talk = -1;
+				figure[trigger_figure].isMove = true;
+			}
+		}
 		window.setView(view);
 		window.clear();
 		i_mch = 0;
@@ -821,12 +959,25 @@ int main()
 			{
 				figure[i].reload();
 				window.draw(figure[i].sprite);
-				window.draw(figure[i].text);
+				//window.draw(figure[i].talk_window);
+				//window.draw(figure[i].text);
 			}
 		if (trigger_figure_to != -1)
 		window.draw(figure[trigger_figure_to].sprite);
 		if (trigger_figure != -1)
 		window.draw(figure[trigger_figure].sprite);
+		if (trigger_talk != -1)
+		{
+			window.draw(figure[trigger_talk].talk_window);
+			window.draw(figure[trigger_talk].text);
+		}
+		if (trigger_choice != -1)
+		{
+			for (int i = 0; i <= 4; i++)
+			{
+				window.draw(choice[i].sprite);
+			}
+		}
 		window.display();
 	}
 	return 0;
