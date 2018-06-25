@@ -67,6 +67,14 @@ public:
 		sprite.setTextureRect(IntRect(0, 0, 50, 50));
 		sprite.setPosition(x, y);
 	}
+	void setemojanot(String Value)
+	{
+		image.loadFromFile("Animations/" + Value + ".png");
+		texture.loadFromImage(image);
+		sprite.setTexture(texture);
+		sprite.setTextureRect(IntRect(0, 0, 50, 50));
+		sprite.setPosition(x, y);
+	}
 	void reload()
 	{
 		//sprite.setOrigin(25, 25);
@@ -236,6 +244,7 @@ int main()
 	view.setCenter(Vector2f(x_desk+200, y_desk+200));
 	while (window.isOpen())
 	{
+		if (mp == -1) mp = 0;
 		float time = clock.getElapsedTime().asMicroseconds(); //дать прошедшее время в микросекундах
 		clock.restart(); //перезагружает время
 		time = time / 600; //скорость игры
@@ -449,6 +458,18 @@ int main()
 				std::cout << "tut" << std::endl;
 				std::cout << mp << std::endl;
 				sf::sleep(sf::seconds(0.3));
+				if (mp == 4)
+				{
+					figure[trigger_figure].setemoj("0");
+					figure[trigger_figure_to].x = -50;
+					figure[trigger_figure_to].y = -50;
+					figure[trigger_figure].isAttack = false;
+					figure[trigger_figure].isMove = true;
+					figure[trigger_figure].sprite.setOrigin(0, 0);
+					figure[trigger_figure].sprite.setScale(1, 1);
+					aat = 0;
+					mp = -1;
+				}
 				if (mp == 3)
 				{
 					figure[trigger_figure].setemoj("0");
@@ -489,20 +510,17 @@ int main()
 					figure[trigger_figure_to].sprite.setRotation(aat+10);
 					mp++;
 				}
-				if (mp == 4)
-				{
-					figure[trigger_figure].setemoj("0");
-					figure[trigger_figure_to].x = -50;
-					figure[trigger_figure_to].y = -50;
-					figure[trigger_figure].isAttack = false;
-					figure[trigger_figure].isMove = true;
-					figure[trigger_figure].sprite.setOrigin(0, 0);
-					figure[trigger_figure].sprite.setScale(1, 1);
-					aat = 0;
-					mp = 0;
-				}
 				break;
 			case 2:
+				if ((mp == 2) && (!figure[trigger_figure_to].isMove))
+				{
+					figure[trigger_figure].isAttack = false;
+					figure[trigger_figure_to].x = -50;
+					figure[trigger_figure_to].y = -50;
+					trigger_figure = -1;
+					trigger_view = 0;
+					mp = -1;
+				}
 				if ((mp == 1)&&(!figure[trigger_figure].isMove))
 				{
 					sf::sleep(sf::seconds(0.3));
@@ -565,23 +583,157 @@ int main()
 					figure[trigger_figure].isMove = true;
 					mp++;
 				}
-				if ((mp == 2)&&(!figure[trigger_figure_to].isMove))
+				break;
+			case 3:
+				if ((mp == 1) && (!figure[trigger_figure].isMove))
 				{
 					figure[trigger_figure].isAttack = false;
 					figure[trigger_figure_to].x = -50;
 					figure[trigger_figure_to].y = -50;
 					trigger_figure = -1;
 					trigger_view = 0;
-					mp = 0;
+					mp=-1;
+				}
+				if (mp == 0)
+				{
+					figure[trigger_figure].setemoj("2");
+					figure[trigger_figure].isMove = true;
+					mp++;
 				}
 				break;
-			case 3:
-				break;
 			case 4:
+				sf::sleep(sf::seconds(0.3));
+				if (mp == 6)
+				{
+					figure[trigger_figure].sprite.setColor(Color(255, 255, 255, 255));
+					figure[trigger_figure].setemoj("0");
+					figure[trigger_figure].isAttack = false;
+					trigger_figure = -1;
+					trigger_view = 0;
+					mp = -1;
+				}
+				if (mp == 5)
+				{
+					figure[trigger_figure].setemojanot("4_1");
+					figure[trigger_figure].sprite.setColor(Color(255, 255, 255, 128));
+					//sf::sleep(sf::seconds(1));
+					mp++;
+				}
+				if (mp == 4)
+				{
+					figure[trigger_figure].sprite.setColor(Color(255, 255, 255, 128));
+					figure[trigger_figure_to].x = -50;
+					figure[trigger_figure_to].y = -50;
+					mp++;
+				}
+				if (mp == 3)
+				{
+					figure[trigger_figure_to].sprite.setColor(Color(255, 255, 255, 128));
+					mp++;
+				}
+				if (mp == 2)
+				{
+					int xx, yy;
+					xx = figure[trigger_figure_to].x;
+					figure[trigger_figure_to].x = figure[trigger_figure].x;
+					figure[trigger_figure].x = xx;
+					yy = figure[trigger_figure_to].y;
+					figure[trigger_figure_to].y = figure[trigger_figure].y;
+					figure[trigger_figure].y = yy;
+					mp++;
+				}
+				if (mp == 1)
+				{
+					figure[trigger_figure_to].setemojanot("4_2");
+					mp++;
+				}
+				if (mp == 0)
+				{
+					figure[trigger_figure].setemoj("2");
+					mp++;
+				}
 				break;
 			case 5:
+				sf::sleep(sf::seconds(0.5));
+				if (mp == 10)
+				{
+					figure[trigger_figure].isAttack = false;
+					figure[trigger_figure].setemoj("0");
+					trigger_figure = -1;
+					trigger_view = 0;
+					mp=-1;
+				}
+				if (mp == 9)
+				{
+					figure[trigger_figure_to].x = -50;
+					figure[trigger_figure_to].x = -50;
+					figure[trigger_figure].setemoj("1");
+					mp++;
+				}
+				if (mp == 8)
+				{
+					figure[trigger_figure].setemoj("2");
+					mp++;
+				}
+				if (mp == 7)
+				{
+					if (figure[trigger_figure_to].value / 7 == 0)
+						figure[trigger_figure_to].setemojanot("B_1");
+					else figure[trigger_figure_to].setemojanot("5_1");
+					mp ++;
+				}
+				if (mp == 6)
+				{
+					figure[trigger_figure].setemoj("3");
+					mp++;
+				}
+				if (mp == 5)
+				{
+					figure[trigger_figure].sprite.setColor(Color(255, 255, 255, 255));
+					mp++;
+				}
+				if (mp == 4)
+				{
+					figure[trigger_figure].x = figure[trigger_figure_to].x;
+					figure[trigger_figure].y = figure[trigger_figure_to].y;
+					mp++;
+				}
+				if (mp == 3)
+				{
+					figure[trigger_figure].sprite.setColor(Color(255, 255, 255, 0));
+					mp++;
+				}
+				if (mp == 2)
+				{
+					figure[trigger_figure].setemoj("2");
+					mp++;
+				}
+				if (mp == 1)
+				{
+					figure[trigger_figure].setemoj("3");
+					mp++;
+				}
+				if (mp == 0)
+				{
+					figure[trigger_figure].setemoj("3");
+					mp++;
+				}
 				break;
 			case 6:
+				if ((mp == 1)&& (!figure[trigger_figure].isMove))
+				{
+					figure[trigger_figure].isAttack = false;
+					figure[trigger_figure_to].x = -50;
+					figure[trigger_figure_to].x = -50;
+					trigger_figure = -1;
+					trigger_view = 0;
+					mp = -1;
+				}
+				if (mp == 0)
+				{
+					figure[trigger_figure].isMove = true;
+					mp++;
+				}
 				break;
 			}
 		}
@@ -623,10 +775,10 @@ int main()
 				window.draw(figure[i].sprite);
 				window.draw(figure[i].text);
 			}
-		if (trigger_figure!=-1)
-		window.draw(figure[trigger_figure].sprite);
 		if (trigger_figure_to != -1)
 		window.draw(figure[trigger_figure_to].sprite);
+		if (trigger_figure != -1)
+		window.draw(figure[trigger_figure].sprite);
 		window.display();
 	}
 	return 0;
