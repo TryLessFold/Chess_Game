@@ -585,11 +585,11 @@ int main()
 						figure[trigger_figure].isMove = false;
 						if (!figure[trigger_figure].isAttack)
 						{
-							if (w == 1) w = 2;
+							if (a[i_whitek][j_whitek]!=6) w = 2;
 							else if (CheckSafetyKing(a, i_whitek, j_whitek))
 								w = 1;
 							else w = 0;
-							if (b == 1) b = 2;
+							if (a[i_blackk][j_blackk] != 12) b = 2;
 							else if (CheckSafetyKing(a, i_blackk, j_blackk))
 								b = 1;
 							else b = 0;
@@ -628,11 +628,11 @@ int main()
 				}
 				if ((figure[trigger_figure].isAttack) && (trigger_figure != -1) && (trigger_choice == -1))
 				{
-					if (w == 1) w = 2;
+					if (a[i_whitek][j_whitek] != 6) w = 2;
 					else if (CheckSafetyKing(a, i_whitek, j_whitek))
 						w = 1;
 					else w = 0;
-					if (b == 1) b = 2;
+					if (a[i_blackk][j_blackk] != 12) b = 2;
 					else if (CheckSafetyKing(a, i_blackk, j_blackk))
 						b = 1;
 					else b = 0;
