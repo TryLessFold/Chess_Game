@@ -1,8 +1,32 @@
 ﻿  main.cpp
-c:\users\trylessfold\chess_game\main.cpp(167): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\view.h(11): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\view.h(12): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\view.h(16): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
 c:\users\trylessfold\chess_game\main.cpp(174): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
-c:\users\trylessfold\chess_game\main.cpp(208): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
-c:\users\trylessfold\chess_game\main.cpp(224): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
-c:\users\trylessfold\chess_game\main.cpp(240): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
-c:\users\trylessfold\chess_game\main.cpp(382): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(207): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(214): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(236): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(239): warning C4244: инициализация: преобразование "sf::Int64" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(255): warning C4244: =: преобразование "float" в "int", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(256): warning C4244: =: преобразование "float" в "int", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(290): warning C4244: =: преобразование "float" в "int", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(291): warning C4244: =: преобразование "float" в "int", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(292): warning C4244: =: преобразование "float" в "int", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(293): warning C4244: =: преобразование "float" в "int", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(406): warning C4244: +=: преобразование "double" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(407): warning C4244: +=: преобразование "double" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(412): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(413): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(431): warning C4244: +=: преобразование "double" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(432): warning C4244: +=: преобразование "double" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(437): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(438): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(451): warning C4305: аргумент: усечение из "double" в "float"
+c:\users\trylessfold\chess_game\main.cpp(456): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(462): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(468): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(489): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+c:\users\trylessfold\chess_game\main.cpp(508): warning C4305: аргумент: усечение из "double" в "float"
+c:\users\trylessfold\chess_game\main.cpp(590): warning C4305: аргумент: усечение из "double" в "float"
+c:\users\trylessfold\chess_game\main.cpp(616): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
   Chess_Game.vcxproj -> C:\Users\TryLessFold\Chess_Game\x64\Debug\Chess_Game.exe

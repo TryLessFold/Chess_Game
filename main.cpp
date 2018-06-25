@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream> 
 #include "map.h"
+#include "view.h"
 #include "fstream"
 #include "Functions.h"
 using namespace sf;
@@ -29,17 +30,20 @@ public:
 	Texture texture;
 	Sprite sprite;
 	Text text;
-	bool isSelect;
+	bool isAttack;
+	bool isMove;
 	figure() 
 	{
-		bool isSelect = false;
+		isAttack = false;
+		isMove = false;
 	};
-	void initial(String Value, float X, float Y)
+	void initial(char Value, float X, float Y)
 	{
-		value = Value[0];
+		if (Value >= 'A') value = Value - 55;
+		else value = Value-48;
 		Valuestr = Value;
 		pass = 1;
-		image.loadFromFile("Animations/"+Value+"_0.png");
+		image.loadFromFile("Animations/"+Valuestr+"_0.png");
 		texture.loadFromImage(image);
 		sprite.setTexture(texture);
 		x = X; y = Y-5;
@@ -49,6 +53,7 @@ public:
 		text.setFillColor(Color::Black);
 		text.setString("");
 		text.setPosition(x+25, y-25);
+		//sprite.setOrigin(25, 25);
 	}
 	void settext(String str)
 	{
@@ -64,6 +69,15 @@ public:
 	}
 	void reload()
 	{
+		//sprite.setOrigin(25, 25);
+		sprite.setPosition(x, y);
+	}
+	void mirror(String Value)
+	{
+		image.loadFromFile("Animations/" + Valuestr + "_" + Value + ".png");
+		texture.loadFromImage(image);
+		sprite.setTexture(texture);
+		sprite.setTextureRect(IntRect(50, 0, -50, 50));
 		sprite.setPosition(x, y);
 	}
 };
@@ -105,7 +119,28 @@ void FileToFile(std::string a, std::string b, int n)
 	//file >> k;
 	//file1 << k << "";
 }
-
+void ChangeView(figure* a, int n, int k, int x, int y, int i)
+{
+	if (i==90)
+		for (int i = 0; i < n; i++)
+		{
+			if (k != 1)
+			{
+				a[i].sprite.setOrigin(0, 0);
+				a[i].text.setOrigin(0, 0);
+				a[i].sprite.setRotation(0);
+				a[i].text.setRotation(0);
+			}
+			else
+			{
+				a[i].sprite.setOrigin(50, 60);
+				a[i].text.setOrigin(0, 0);
+				a[i].sprite.rotate(180);
+				a[i].text.setRotation(0);
+			}
+		}
+	ChangeRotate_0(k, x, y, i);
+}
 //==========================================================================================
 //MAIN
 //==========================================================================================
@@ -120,18 +155,23 @@ int main()
 	map.loadFromImage(map_image);
 	s_map.setTexture(map);
 	figure figure[32];
+	Clock clock;
+	double dis;
 	char castling[2] = { 3,3 }, parry[2] = { 0,0 }, x_parrying, y_parrying;
 	char i_blackk = 1, j_blackk = 5, i_whitek = 8, j_whitek = 4;
 	int **a;
-	int trigger_map = 0, trigger_figure = -1, trigger_figure_to = -1;
-	int ch_figure = 0, i_mch = 0, j_mch = 0;
-	int x_desk = 0, y_desk = 0, iy = 0, jx = 0, i1 = 0, j1 = 0, k = 0, pass = 0;
-	int xbase = 1280, ybase = 720;
+	int trigger_map = 0, trigger_figure = -1, trigger_figure_to = -1, trigger_view=180;
+	int ch_figure = 0, i_mch = 0, j_mch = 0, mp=0;
+	int x_desk = 0, y_desk = 0, iy = 0, jx = 0, i1 = 0, j1 = 0, k = 0, pass = 0, tempX=0, tempY=0;
+	int xbase = 1280, ybase = 720, aat=0;
 	int *xwin, *ywin;
 	xwin = &xbase;
 	ywin = &ybase;
 	bool mousec = false;
-	sf::RenderWindow window(VideoMode(*xwin, *ywin), "Chess", sf::Style::Fullscreen);
+	char ch;
+	//sf::RenderWindow window(VideoMode(*xwin, *ywin), "Chess", sf::Style::Fullscreen);
+	RenderWindow window(VideoMode(*xwin, *ywin), "Chess");
+	view.reset(sf::FloatRect(0, 0, *xwin, *ywin));
 	a = new int*[10];
 	for (int i = 0; i < 10; i++)
 		a[i] = new int[10];
@@ -184,7 +224,7 @@ int main()
 			}
 			window.draw(s_map);
 		}
-	std::cout << y_desk << " " << x_desk << std::endl;
+	//std::cout << y_desk << " " << x_desk << std::endl;
 	for (int i = 1; i < 9; i++)
 	{
 		for (int j = 1; j < 9; j++)
@@ -193,14 +233,19 @@ int main()
 		}
 		std::cout << std::endl;
 	}
+	view.setCenter(Vector2f(x_desk+200, y_desk+200));
 	while (window.isOpen())
 	{
+		float time = clock.getElapsedTime().asMicroseconds(); //дать прошедшее время в микросекундах
+		clock.restart(); //перезагружает время
+		time = time / 600; //скорость игры
 		ch_figure = 0;
-		Vector2i wPos = Mouse::getPosition(window);
+		Vector2i pixelPos = Mouse::getPosition(window);//забираем коорд курсора
+		Vector2f wPos = window.mapPixelToCoords(pixelPos);//переводим их в игровые (уходим от коорд окна)
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
-			if ((event.key.code == Mouse::Left) && (mousec == false))
+			if ((event.key.code == Mouse::Left) && (mousec == false)&&(figure[trigger_figure].isMove!=true) && (figure[trigger_figure].isAttack != true))
 			{
 				if (trigger_figure == -1)
 				{
@@ -209,12 +254,12 @@ int main()
 						{
 							iy = ((wPos.y - y_desk) / 50) + 1;
 							jx = ((wPos.x - x_desk) / 50) + 1;
-							//if ((a[iy][jx] / 7) == k)
-							//{
+							if ((a[iy][jx] / 7) == k)
+							{
 								mousec = true;
 								figure[i].setemoj("1");
 								trigger_figure = i;
-							//}
+							}
 							break;
 						}
 				}
@@ -233,7 +278,7 @@ int main()
 						}
 
 				}
-				if ((trigger_figure != -1)&&(mousec==false))
+				if ((trigger_figure != -1) && (mousec == false))
 				{
 					mousec = true;
 					for (int i = 0; i < 32; i++)
@@ -244,12 +289,14 @@ int main()
 						}
 					i1 = ((wPos.y - y_desk) / 50) + 1;
 					j1 = ((wPos.x - x_desk) / 50) + 1;
+					tempX = wPos.x - x_desk;
+					tempY = wPos.y - y_desk;
 					if ((iy > 0) && (iy < 9) && (jx > 0) && (jx < 9) && (j1 > 0) && (j1 < 9) && (i1 > 0) && (i1 < 9))
 					{
 						pass = CheckMove(a, iy, jx, i1, j1);
 						if (((a[iy][jx] == 12) || (a[iy][jx] == 6)) && (castling[k] > 0) && (pass == 0))
 							pass = Castling(a, iy, jx, i1, j1, castling[k]);
-						if ((parry[k] == 1) && (j1 == x_parrying)&&(i1 == y_parrying))
+						if ((parry[k] == 1) && (j1 == x_parrying) && (i1 == y_parrying))
 						{
 							if (((a[iy][jx] == 1) || (a[iy][jx] == 7)) && (pass == 0))
 							{
@@ -262,10 +309,10 @@ int main()
 						if (((a[iy][jx] == 1) || (a[iy][jx] == 7)) && (pass != 0))
 						{
 							parry[1 - k] = Charge(a, iy, jx, i1, j1);
-							if (parry[1 - k] != 0) 
+							if (parry[1 - k] != 0)
 							{
 								y_parrying = i1;
-								x_parrying = j1; 
+								x_parrying = j1;
 							}
 						}
 					}
@@ -282,12 +329,9 @@ int main()
 						if (((a[iy][jx] == 12) || (a[iy][jx] == 6)) && (castling[k] != 0)) castling[k] = 0;
 						k = 1 - k;
 						SwapMove(&a[iy][jx], &a[i1][j1]);
-						figure[trigger_figure].x += ((j1 - jx) * 50);
-						figure[trigger_figure].y += ((i1 - iy) * 50);
-						figure[trigger_figure].reload();
+						figure[trigger_figure].isMove = true;
 						figure[trigger_figure].setemoj("0");
 						Change(a, i1, j1);
-						trigger_figure = -1;
 					}
 					if (pass == 2)
 					{
@@ -299,15 +343,8 @@ int main()
 						if (((a[iy][jx] == 12) || (a[iy][jx] == 6)) && (castling[k] != 0)) castling[k] = 0;
 						k = 1 - k;
 						SwapMove(&a[iy][jx], &a[i1][j1]);
-						figure[trigger_figure].x += ((j1 - jx) * 50);
-						figure[trigger_figure].y += ((i1 - iy) * 50);
-						figure[trigger_figure].reload();
-						figure[trigger_figure_to].x = 0;
-						figure[trigger_figure_to].y = 0;
-						figure[trigger_figure_to].reload();
-						figure[trigger_figure].setemoj("0");
+						figure[trigger_figure].isAttack = true;
 						Change(a, iy, jx);
-						trigger_figure = -1;
 					}
 					if (pass == 4) printf("Choose Figure\n");
 					if (pass == 5)
@@ -326,10 +363,11 @@ int main()
 							figure[trigger_figure].reload();
 							figure[trigger_figure].setemoj("0");
 							SwapMove(&a[i1][1], &a[i1][j1 + 1]);
+							//ChangeView(figure, 32, k, x_desk + 200, y_desk + 200);
 						}
 						castling[k] = 0;
 						k = 1 - k;
-						trigger_figure = -1;
+						//trigger_figure = -1;
 					}
 					if (pass == 6)
 					{
@@ -344,7 +382,8 @@ int main()
 						figure[trigger_figure_to].y = 0;
 						figure[trigger_figure_to].reload();
 						k = 1 - k;
-						trigger_figure = -1;
+						//trigger_figure = -1;
+						//ChangeView(figure, 32, k, x_desk + 200, y_desk + 200);
 					}
 				}
 			}
@@ -352,12 +391,207 @@ int main()
 				if (event.key.code == Mouse::Left)
 				{
 					std::cout << iy << " " << jx << "    " << i1 << " " << j1 << std::endl;
-					std::cout << pass << std::endl;
+					//std::cout << pass << std::endl;
 					mousec = false;
 				}
 			if (event.type == sf::Event::Closed)
 				window.close();
 		}
+		if ((figure[trigger_figure].isMove)&&(trigger_figure!=-1)){
+			//std::cout << iy << " " << jx << "    " << i1 << " " << j1 << std::endl;
+			dis = sqrt((((j1 - 1) * 50 - (int)((figure[trigger_figure].x - x_desk))))*(((j1 - 1) * 50 - (int)((figure[trigger_figure].x - x_desk))))
+				+ (((i1 - 1) * 50 - (int)((figure[trigger_figure].y - y_desk))))*(((i1 - 1) * 50 - (int)((figure[trigger_figure].y - y_desk)))));
+		
+			if (dis > 0) {
+				figure[trigger_figure].x += 0.1*time*(((j1-1)*50 - (int)((figure[trigger_figure].x - x_desk)))) / dis;
+				figure[trigger_figure].y += 0.1*time*(((i1-1)*50 - (int)((figure[trigger_figure].y - y_desk)))) / dis;
+			}
+			else
+			{
+				figure[trigger_figure].setemoj("0");
+				figure[trigger_figure].x = (int)((j1-1) * 50 + x_desk);
+				figure[trigger_figure].y = (int)((i1-1) * 50 + y_desk-5);
+				figure[trigger_figure].isMove = false;
+				if (!figure[trigger_figure].isAttack)
+				{
+					trigger_figure = -1;
+					trigger_view = 0;
+				}
+			}
+			std::cout << trigger_figure << std::endl;
+			std::cout << figure[trigger_figure].x<<" ";
+			std::cout << figure[trigger_figure].y << std::endl;
+		}
+		if ((figure[trigger_figure_to].isMove) && (trigger_figure_to != -1)) {
+			//std::cout << iy << " " << jx << "    " << i1 << " " << j1 << std::endl;
+			dis = sqrt((((j1 - 1) * 50 - (int)((figure[trigger_figure_to].x - x_desk))))*(((j1 - 1) * 50 - (int)((figure[trigger_figure_to].x - x_desk))))
+				+ (((i1 - 1) * 50 - (int)((figure[trigger_figure_to].y - y_desk))))*(((i1 - 1) * 50 - (int)((figure[trigger_figure_to].y - y_desk)))));
+
+			if (dis > 0) {
+				figure[trigger_figure_to].x += 0.1*time*(((j1 - 1) * 50 - (int)((figure[trigger_figure_to].x - x_desk)))) / dis;
+				figure[trigger_figure_to].y += 0.1*time*(((i1 - 1) * 50 - (int)((figure[trigger_figure_to].y - y_desk)))) / dis;
+			}
+			else
+			{
+				figure[trigger_figure_to].setemoj("0");
+				figure[trigger_figure_to].x = (int)((j1 - 1) * 50 + x_desk);
+				figure[trigger_figure_to].y = (int)((i1 - 1) * 50 + y_desk - 5);
+				figure[trigger_figure_to].isMove = false;
+			}
+		}
+		if ((figure[trigger_figure].isAttack) && (trigger_figure != -1))
+		{
+			ch = figure[trigger_figure].value;
+			if (ch >= 7) ch = (ch % 7) + 1;
+			switch (ch)
+			{
+			case 1:
+				std::cout << "tut" << std::endl;
+				std::cout << mp << std::endl;
+				sf::sleep(sf::seconds(0.3));
+				if (mp == 3)
+				{
+					figure[trigger_figure].setemoj("0");
+					figure[trigger_figure_to].sprite.setColor(Color(255, 255, 255, 128));
+					figure[trigger_figure_to].sprite.setRotation(aat);
+					mp++;
+				}
+				if (mp == 2)
+				{
+					figure[trigger_figure].setemoj("2");
+					figure[trigger_figure_to].sprite.setRotation(aat+5);
+					mp++;
+				}
+				if (mp == 1)
+				{
+					figure[trigger_figure].setemoj("1");
+					figure[trigger_figure_to].sprite.setRotation(aat);
+					mp++;
+				}
+				if (mp == 0)
+				{
+					if ((j1 < jx) && (figure[trigger_figure].value == 1))
+					{
+						figure[trigger_figure].sprite.setOrigin(50, 0);
+						figure[trigger_figure].sprite.setScale(-1, 1);
+						aat = 0;
+					}
+					else if ((j1 > jx) && (figure[trigger_figure].value == 7))
+					{
+						figure[trigger_figure].sprite.setOrigin(0, 50);
+						figure[trigger_figure].sprite.setScale(-1, 1);
+						aat = 180;
+					}
+					else if (figure[trigger_figure].value == 7)
+						aat = 180;
+					else aat = 0;
+					figure[trigger_figure].setemoj("2");
+					figure[trigger_figure_to].sprite.setRotation(aat+10);
+					mp++;
+				}
+				if (mp == 4)
+				{
+					figure[trigger_figure].setemoj("0");
+					figure[trigger_figure_to].x = -50;
+					figure[trigger_figure_to].y = -50;
+					figure[trigger_figure].isAttack = false;
+					figure[trigger_figure].isMove = true;
+					figure[trigger_figure].sprite.setOrigin(0, 0);
+					figure[trigger_figure].sprite.setScale(1, 1);
+					aat = 0;
+					mp = 0;
+				}
+				break;
+			case 2:
+				if ((mp == 1)&&(!figure[trigger_figure].isMove))
+				{
+					sf::sleep(sf::seconds(0.3));
+					if (aat == 4)
+					{
+						j1 = j1-2; //i1 = 4;
+					}
+					else if (aat == 5)
+					{
+						j1 = j1+2; //i1 = 4;
+					}
+					else if (aat == 2)
+					{
+						i1 = i1+2; //j1 = 4;
+					}
+					else if (aat == 3)
+					{
+						i1 = i1-2; //j1 = 4;
+					}
+					figure[trigger_figure].setemoj("0");
+					figure[trigger_figure].isMove = false;
+					std::cout << trigger_figure << std::endl;
+					figure[trigger_figure_to].isMove = true;
+					mp++;
+				}
+				if (mp == 0)
+				{
+					if (j1 < jx)
+					{
+						if(figure[trigger_figure].value / 7 == 0)
+						figure[trigger_figure].setemoj("4");
+						else
+						figure[trigger_figure].setemoj("5");
+						aat = 4;
+					}
+					else if (j1 > jx)
+					{
+						if (figure[trigger_figure].value / 7 == 0)
+						figure[trigger_figure].setemoj("5");
+						else
+						figure[trigger_figure].setemoj("4");
+						aat = 5;
+					}
+					else if (i1 > iy)
+					{
+						if (figure[trigger_figure].value / 7 == 0)
+							figure[trigger_figure].setemoj("2");
+						else
+							figure[trigger_figure].setemoj("3");
+						aat = 2;
+					}
+					else
+					{
+						if (figure[trigger_figure].value / 7 == 0)
+							figure[trigger_figure].setemoj("3");
+						else
+							figure[trigger_figure].setemoj("2");
+						aat = 3;
+					}
+					figure[trigger_figure].isMove = true;
+					mp++;
+				}
+				if ((mp == 2)&&(!figure[trigger_figure_to].isMove))
+				{
+					figure[trigger_figure].isAttack = false;
+					figure[trigger_figure_to].x = -50;
+					figure[trigger_figure_to].y = -50;
+					trigger_figure = -1;
+					trigger_view = 0;
+					mp = 0;
+				}
+				break;
+			case 3:
+				break;
+			case 4:
+				break;
+			case 5:
+				break;
+			case 6:
+				break;
+			}
+		}
+		if (trigger_view < 180 )
+		{
+			sf::sleep(sf::seconds(0.01));
+			trigger_view += 5;
+			ChangeView(figure, 32, k, x_desk + 200, y_desk + 200, trigger_view);
+		}
+		window.setView(view);
 		window.clear();
 		i_mch = 0;
 		j_mch = 0;
@@ -385,9 +619,14 @@ int main()
 		for (int i = 0; i <= 32; i++)
 			if (figure[i].pass == 1)
 			{
+				figure[i].reload();
 				window.draw(figure[i].sprite);
 				window.draw(figure[i].text);
 			}
+		if (trigger_figure!=-1)
+		window.draw(figure[trigger_figure].sprite);
+		if (trigger_figure_to != -1)
+		window.draw(figure[trigger_figure_to].sprite);
 		window.display();
 	}
 	return 0;
