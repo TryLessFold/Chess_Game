@@ -7,13 +7,6 @@
 #include "Functions.h"
 using namespace sf;
 
-std::stringstream toString(int val)
-{
-	std::stringstream ss;
-	ss << val;
-	return ss;
-}
-
 //===========================================================================================
 //CLASS_FIGURE
 //===========================================================================================
@@ -51,7 +44,7 @@ public:
 		sprite.setPosition(x, y);
 		text.setCharacterSize(16);
 		text.setFillColor(Color::Black);
-		text.setString("");
+		text.setString(Value);
 		text.setPosition(x+25, y-25);
 		//sprite.setOrigin(25, 25);
 	}
@@ -79,6 +72,7 @@ public:
 	{
 		//sprite.setOrigin(25, 25);
 		sprite.setPosition(x, y);
+		text.setPosition(x + 25, y - 25);
 	}
 	void mirror(String Value)
 	{
@@ -142,9 +136,9 @@ void ChangeView(figure* a, int n, int k, int x, int y, int i)
 			else
 			{
 				a[i].sprite.setOrigin(50, 60);
-				a[i].text.setOrigin(0, 0);
+				a[i].text.setOrigin(0, 110);
 				a[i].sprite.rotate(180);
-				a[i].text.setRotation(0);
+				a[i].text.setRotation(180);
 			}
 		}
 	ChangeRotate_0(k, x, y, i);
@@ -166,11 +160,11 @@ int main()
 	Clock clock;
 	double dis;
 	char castling[2] = { 3,3 }, parry[2] = { 0,0 }, x_parrying, y_parrying;
-	char i_blackk = 1, j_blackk = 5, i_whitek = 8, j_whitek = 4;
+	char i_blackk = 1, j_blackk = 4, i_whitek = 8, j_whitek = 4;
 	int **a;
 	int trigger_map = 0, trigger_figure = -1, trigger_figure_to = -1, trigger_view=180;
 	int ch_figure = 0, i_mch = 0, j_mch = 0, mp=0;
-	int x_desk = 0, y_desk = 0, iy = 0, jx = 0, i1 = 0, j1 = 0, k = 0, pass = 0, tempX=0, tempY=0;
+	int x_desk = 0, y_desk = 0, iy = 0, jx = 0, i1 = 0, j1 = 0, k = 0, b, w, pass = 0, tempX=0, tempY=0;
 	int xbase = 1280, ybase = 720, aat=0;
 	int *xwin, *ywin;
 	xwin = &xbase;
@@ -251,6 +245,7 @@ int main()
 		ch_figure = 0;
 		Vector2i pixelPos = Mouse::getPosition(window);//забираем коорд курсора
 		Vector2f wPos = window.mapPixelToCoords(pixelPos);//переводим их в игровые (уходим от коорд окна)
+		std::cout << wPos.x << " " << wPos.y << std::endl;
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
@@ -338,6 +333,14 @@ int main()
 						if (((a[iy][jx] == 12) || (a[iy][jx] == 6)) && (castling[k] != 0)) castling[k] = 0;
 						k = 1 - k;
 						SwapMove(&a[iy][jx], &a[i1][j1]);
+						if (figure[trigger_figure].value == 12)
+						{
+							i_blackk = i1; j_blackk = j1;
+						}
+						else if (figure[trigger_figure].value == 6)
+						{
+							i_whitek = i1; j_whitek = j1;
+						}
 						figure[trigger_figure].isMove = true;
 						figure[trigger_figure].setemoj("0");
 						Change(a, i1, j1);
@@ -352,6 +355,14 @@ int main()
 						if (((a[iy][jx] == 12) || (a[iy][jx] == 6)) && (castling[k] != 0)) castling[k] = 0;
 						k = 1 - k;
 						SwapMove(&a[iy][jx], &a[i1][j1]);
+						if (figure[trigger_figure].value == 12)
+						{
+							i_blackk = i1; j_blackk = j1;
+						}
+						else if (figure[trigger_figure].value == 6)
+						{
+							i_whitek = i1; j_whitek = j1;
+						}
 						figure[trigger_figure].isAttack = true;
 						Change(a, iy, jx);
 					}
@@ -359,24 +370,43 @@ int main()
 					if (pass == 5)
 					{
 						SwapMove(&a[iy][jx], &a[i1][j1]);
+						if (figure[trigger_figure].value == 12)
+						{
+							i_blackk = i1; j_blackk = j1;
+						}
+						else if (figure[trigger_figure].value == 6)
+						{
+							i_whitek = i1; j_whitek = j1;
+						}
+						figure[trigger_figure].isMove = true;
 						if (j1 > jx)
 						{
+							std::cout << ((i1 - 1) * 50) + y_desk + 25 << " " << (7 * 50) + x_desk + 25 << std::endl;
+							for (int i = 0; i < 32; i++)
+								if (figure[i].sprite.getGlobalBounds().contains(((7 * 50) + x_desk + 25), ((i1 - 1) * 50) + y_desk + 25))
+								{
+									trigger_figure_to = i;
+									break;
+								}
+							figure[trigger_figure_to].x -= ((j1 + 1 - jx) * 50);
 							SwapMove(&a[i1][8], &a[i1][j1 - 1]);
-							figure[trigger_figure].x += ((j1 - jx) * 50);
-							figure[trigger_figure].y += ((i1 - iy) * 50);
 						}
 						else
 						{
-							figure[trigger_figure].x += ((j1 - jx) * 50);
-							figure[trigger_figure].y += ((i1 - iy) * 50);
-							figure[trigger_figure].reload();
-							figure[trigger_figure].setemoj("0");
+							std::cout << ((i1 - 1) * 50) + y_desk + 25 << " " << (7 * 50) + x_desk + 25 << std::endl;
+							for (int i = 0; i < 32; i++)
+								if (figure[i].sprite.getGlobalBounds().contains(((0 * 50) + x_desk + 25),((i1-1) * 50) + y_desk+25))
+								{
+									trigger_figure_to= i;
+									break;
+								}
+							figure[trigger_figure_to].x -= ((j1 - jx) * 50);
 							SwapMove(&a[i1][1], &a[i1][j1 + 1]);
-							//ChangeView(figure, 32, k, x_desk + 200, y_desk + 200);
 						}
+						std::cout <<"||||||||"<< trigger_figure_to << std::endl;
+						figure[trigger_figure_to].reload();
 						castling[k] = 0;
 						k = 1 - k;
-						//trigger_figure = -1;
 					}
 					if (pass == 6)
 					{
@@ -400,7 +430,7 @@ int main()
 				if (event.key.code == Mouse::Left)
 				{
 					std::cout << iy << " " << jx << "    " << i1 << " " << j1 << std::endl;
-					//std::cout << pass << std::endl;
+					std::cout << pass << std::endl;
 					mousec = false;
 				}
 			if (event.type == sf::Event::Closed)
@@ -423,6 +453,15 @@ int main()
 				figure[trigger_figure].isMove = false;
 				if (!figure[trigger_figure].isAttack)
 				{
+					if (w == 1) w = 2;
+					else if (CheckSafetyKing(a, i_whitek, j_whitek))
+						w = 1;
+					else w = 0;
+					if (b == 1) b = 2;
+					else if (CheckSafetyKing(a, i_blackk, j_blackk))
+						b = 1;
+					else b = 0;
+					std::cout << "|||" << b << "|||" << w << std::endl;
 					trigger_figure = -1;
 					trigger_view = 0;
 				}
@@ -450,6 +489,15 @@ int main()
 		}
 		if ((figure[trigger_figure].isAttack) && (trigger_figure != -1))
 		{
+			if (w == 1) w = 2;
+			else if (CheckSafetyKing(a, i_whitek, j_whitek))
+				w = 1;
+			else w = 0;
+			if (b == 1) b = 2;
+			else if (CheckSafetyKing(a, i_blackk, j_blackk))
+				b = 1;
+			else b = 0;
+			std::cout << "|||" << b << "|||" << w << std::endl;
 			ch = figure[trigger_figure].value;
 			if (ch >= 7) ch = (ch % 7) + 1;
 			switch (ch)
