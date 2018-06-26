@@ -120,8 +120,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Desktop\Chess_Game-Error\main\main\Functions.cpp" />
-    <ClCompile Include="..\Desktop\Chess_Game-Error\main\main\main1.cpp" />
+    <ClCompile Include="Functions.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
