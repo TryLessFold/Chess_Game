@@ -1,0 +1,9 @@
+﻿  stdafx.cpp
+  Functions.cpp
+  AllTest.cpp
+  Создание кода...
+c:\users\ucer\desktop\chess_game-master\main\functions.cpp(317): warning C4715: Charge: значение возвращается не при всех путях выполнения
+c:\users\ucer\desktop\chess_game-master\main\functions.cpp(304): warning C4715: Castling: значение возвращается не при всех путях выполнения
+c:\users\ucer\desktop\chess_game-master\main\functions.cpp(266): warning C4715: CheckMove: значение возвращается не при всех путях выполнения
+     Создается библиотека C:\Users\ucer\Desktop\Chess_Game-master\x64\Debug\Tests.lib и объект C:\Users\ucer\Desktop\Chess_Game-master\x64\Debug\Tests.exp
+  Tests.vcxproj -> C:\Users\ucer\Desktop\Chess_Game-master\x64\Debug\Tests.dll
